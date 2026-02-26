@@ -27,7 +27,7 @@ workflows:
     name: iOS TestFlight Release (Capacitor)
     max_build_duration: 90
     integrations:
-      app_store_connect: A-LED API
+      app_store_connect: A-LED API.1
     environment:
       xcode: latest
       node: 22
