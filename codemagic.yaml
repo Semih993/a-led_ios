@@ -31,13 +31,16 @@ workflows:
     environment:
       xcode: latest
       node: 22
+      ios_signing:
+        certificates:
+          - ios_dist_cert
+        provisioning_profiles:
+          - ios_appstore_profile
     scripts:
       - name: Install dependencies
         script: npm ci
       - name: Sync Capacitor iOS
         script: npx cap sync ios
-      - name: Fetch/create signing files
-        script: app-store-connect fetch-signing-files com.arca.aled --type IOS_APP_STORE --create
       - name: Use signing files
         script: xcode-project use-profiles
       - name: Build ipa
