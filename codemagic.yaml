@@ -1,40 +1,52 @@
 workflows:
-  ios_testflight:
-    name: iOS TestFlight Release (Capacitor)
-    max_build_duration: 90
-
-    integrations:
-      app_store_connect: A-LED API
-
+  ios_debug_build:
+    name: iOS Debug Build (Capacitor)
+    max_build_duration: 60
     environment:
       xcode: latest
       node: 22
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.arca.aled
-
     scripts:
       - name: Install dependencies
         script: npm ci
-
       - name: Sync Capacitor iOS
         script: npx cap sync ios
+      - name: Build iOS app (unsigned, simulator check)
+        script: |
+          cd ios/App
+          xcodebuild \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            build
+    artifacts:
+      - ~/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
 
-      - name: Fetch signing files from App Store Connect
+  ios_testflight:
+    name: iOS TestFlight Release (Capacitor)
+    max_build_duration: 90
+    integrations:
+      app_store_connect: A-LED API
+    environment:
+      xcode: latest
+      node: 22
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Sync Capacitor iOS
+        script: npx cap sync ios
+      - name: Fetch/create signing files
         script: app-store-connect fetch-signing-files com.arca.aled --type IOS_APP_STORE --create
-
-      - name: Use fetched profiles
+      - name: Use signing files
         script: xcode-project use-profiles
-
       - name: Build ipa
         script: |
           cd ios/App
           xcode-project build-ipa --project App.xcodeproj --scheme App
-
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-
     publishing:
       app_store_connect:
         auth: integration
