@@ -1,32 +1,4 @@
 workflows:
-  ios_debug_build:
-    name: iOS Debug Build (Capacitor)
-    max_build_duration: 60
-    environment:
-      xcode: latest
-      node: 22
-
-    scripts:
-      - name: Install dependencies
-        script: npm ci
-
-      - name: Sync Capacitor iOS
-        script: npx cap sync ios
-
-      - name: Build iOS app (unsigned, simulator check)
-        script: |
-          cd ios/App
-          xcodebuild \
-            -project App.xcodeproj \
-            -scheme App \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            build
-
-    artifacts:
-      - ~/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
-
   ios_testflight:
     name: iOS TestFlight Release (Capacitor)
     max_build_duration: 90
@@ -48,15 +20,16 @@ workflows:
       - name: Sync Capacitor iOS
         script: npx cap sync ios
 
-      - name: Set up code signing
+      - name: Fetch signing files from App Store Connect
+        script: app-store-connect fetch-signing-files com.arca.aled --type IOS_APP_STORE --create
+
+      - name: Use fetched profiles
         script: xcode-project use-profiles
 
-      - name: Build ipa for App Store
+      - name: Build ipa
         script: |
           cd ios/App
-          xcode-project build-ipa \
-            --project App.xcodeproj \
-            --scheme App
+          xcode-project build-ipa --project App.xcodeproj --scheme App
 
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
