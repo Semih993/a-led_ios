@@ -5,20 +5,24 @@ workflows:
     environment:
       xcode: latest
       node: 22
+
     scripts:
       - name: Install dependencies
         script: npm ci
+
       - name: Sync Capacitor iOS
         script: npx cap sync ios
+
       - name: Build iOS app (unsigned, simulator check)
         script: |
           cd ios/App
           xcodebuild \
-            -workspace App.xcworkspace \
+            -project App.xcodeproj \
             -scheme App \
             -configuration Debug \
             -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             build
+
     artifacts:
       - ~/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
