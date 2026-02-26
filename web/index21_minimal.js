@@ -1,0 +1,2 @@
+alert("MINIMAL INDEX21.JS RAN");
+console.log("MINIMAL INDEX21.JS RAN");

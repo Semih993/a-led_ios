@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ARSLAN LED</string>
+    <string name="title_activity_main">ARSLAN LED</string>
+    <string name="package_name">com.arca.lightapp</string>
+    <string name="custom_url_scheme">com.arca.lightapp</string>
+</resources>

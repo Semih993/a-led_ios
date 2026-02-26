@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>A-LED</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="index21.css" />
+  </head>
+  <body>
+    <div id="bleStatusFloating" style="position:fixed; bottom:10px; left:10px; padding:8px 10px; background:#000; color:#fff; font-size:12px; border-radius:8px; z-index:9999; display:none;">
+      BLE: booting...
+    </div>
+    <!-- INTRO SCREEN -->
+    <div id="introScreen" class="show">
+      <div class="gate-wrap">
+        <div class="intro-title">A-LED CONTROL</div>
+      </div>
+    </div>
+    <!-- BLE SCREEN -->
+    <div id="bleScreen">
+      <div class="bleStage">
+        <div class="ble-card" id="bleCard">
+          <div class="ble-head">
+            <div class="ble-title">Bluetooth</div>
+            <div class="chip" id="bleChip">Not connected</div>
+          </div>
+          <div class="ble-subtitle">Pair to start.</div>
+          <div class="ble-actions">
+            <button class="btn btn-primary" id="btnBleScanConnect">Scan</button>
+            <button class="btn" id="btnBleSkip">Offline</button>
+            <button class="btn" id="btnBleDisconnect" style="display:none;">Disconnect</button>
+          </div>
+          <div class="bleStatus" id="bleStatus"></div>
+        </div>
+      </div>
+    </div>
+    <!-- CONNECTED ANIMATION OVERLAY -->
+    <div class="connectedAnim" id="connectedAnim">
+      <div class="connectedBadge">
+        <div class="checkWrap"><div class="checkIcon">OK</div></div>
+        <div class="connectedText">
+          <div class="t1" id="connectedTitle">Connected</div>
+          <div class="t2">Opening controls...</div>
+        </div>
+      </div>
+    </div>
+    <!-- Menu -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <div class="menu-drawer" id="menuDrawer" aria-hidden="true">
+      <div class="menu-head">
+        <div class="menu-title">Menu</div>
+        <button class="menu-close" id="menuClose">Close</button>
+      </div>
+      <div class="menu-body" id="menuBody">
+        <div id="menuPageMain">
+          <div class="menu-card" id="menuOpenLanguages" role="button">
+            <div class="left">
+              <div class="t1" data-i18n="languages">Languages</div>
+              <div class="t2" id="menuLangHint">EN</div>
+            </div>
+            <div class="arrow">Open</div>
+          </div>
+          <div class="menu-card" id="menuOpenRename" role="button">
+            <div class="left">
+              <div class="t1">Rename Channel</div>
+              <div class="t2" id="menuRenameHint">Channel names</div>
+            </div>
+            <div class="arrow">Open</div>
+          </div>
+        </div>
+        <div id="menuPageLanguages" style="display:none;">
+          <div class="menu-subhead">
+            <button class="menu-back" id="menuBackFromLanguages">Back</button>
+            <div class="menu-subtitle" data-i18n="languages">Languages</div>
+          </div>
+          <div class="list-wrap" id="langListMenu"></div>
+        </div>
+        <div id="menuPageRename" style="display:none;">
+          <div class="menu-subhead">
+            <button class="menu-back" id="menuBackFromRename">Back</button>
+            <div class="menu-subtitle">Rename Channel</div>
+          </div>
+          <div class="field">
+            <label id="lblCh1Name">Channel 1 name</label>
+            <input id="inpCh1Name" type="text" placeholder="Bedroom">
+          </div>
+          <div class="field">
+            <label id="lblCh2Name">Channel 2 name</label>
+            <input id="inpCh2Name" type="text" placeholder="Hallway">
+          </div>
+          <button class="menu-save" id="btnSaveNames">Save</button>
+        </div>
+      </div>
+    </div>
+    <!-- Palette Pop-up -->
+    <div class="paletteOverlay" id="paletteOverlay"></div>
+    <div class="paletteModal" id="paletteModal">
+      <div class="paletteHead">
+        <div class="paletteTitle" id="paletteTitle">Pick a colour</div>
+        <button class="paletteClose" id="paletteClose">Close</button>
+      </div>
+      <div class="paletteSeg" id="paletteSegRemote" style="display:none;">
+        <button class="segbtn" id="remoteSeg1" type="button">Primary</button>
+        <button class="segbtn" id="remoteSeg2" type="button">Secondary</button>
+        <button class="segbtn" id="remoteSeg3" type="button">Tertiary</button>
+      </div>
+      <div class="paletteGrid" id="paletteGrid"></div>
+      <div class="paletteActions">
+        <button class="btn paletteSelect" id="paletteSelect">Select Colour</button>
+      </div>
+    </div>
+    <!-- App -->
+    <div class="app" id="appRoot">
+      <div class="topbar" id="topbar">
+        <h1>A-LED</h1>
+        <button class="hamburger" id="btnMenu" aria-label="Menu">
+          <div class="burger" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+        </button>
+      </div>
+      <!-- HOME SCREEN -->
+      <div id="homeScreen">
+        <div class="global-row">
+          <div class="master-power">
+            <div class="master-power-label">POWER</div>
+            <div id="toggleMaster" class="toggle" title="Power Master">
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="home-grid">
+          <div class="home-card" id="cardCh1">
+            <div class="card-top">
+              <div class="card-title" id="titleCh1" data-i18n="channel_1">Channel 1</div>
+              <div id="toggleCh1" class="toggle">
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="home-card" id="cardCh2">
+            <div class="card-top">
+              <div class="card-title" id="titleCh2" data-i18n="channel_2">Channel 2</div>
+              <div id="toggleCh2" class="toggle">
+                <div class="toggle-track"><div class="toggle-thumb"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- REMOTE SCREEN -->
+      <div id="remoteScreen">
+        <div class="remote-header">
+          <h1>SMART REMOTE</h1>
+          <div class="remote-status">
+            <span class="remote-dot" id="remoteStatusDot"></span>
+            <span class="remote-text" id="remoteStatusText">Remote disconnected</span>
+          </div>
+        </div>
+        <div class="remote-modes" id="remoteModesWrap" style="display:none;">
+          <div class="remote-modes-head">Mode cycle</div>
+          <div class="remote-modes-grid">
+            <div class="effect-card remote-mode-card" data-remote-cycle="0">
+              <div class="body">
+                <div class="effect-name">UI selected</div>
+                <div class="remote-mode-sub">Custom</div>
+              </div>
+            </div>
+            <div class="effect-card remote-mode-card" data-remote-cycle="1">
+              <div class="body">
+                <div class="effect-name">Cream Lounge</div>
+                <div class="remote-mode-sub">Built-in</div>
+              </div>
+            </div>
+            <div class="effect-card remote-mode-card" data-remote-cycle="2">
+              <div class="body">
+                <div class="effect-name">Purple Midnight</div>
+                <div class="remote-mode-sub">Built-in</div>
+              </div>
+            </div>
+            <div class="effect-card remote-mode-card" data-remote-cycle="3">
+              <div class="body">
+                <div class="effect-name">Cool Breeze</div>
+                <div class="remote-mode-sub">Built-in</div>
+              </div>
+            </div>
+            <div class="effect-card remote-mode-card" data-remote-cycle="4">
+              <div class="body">
+                <div class="effect-name">Tokyo</div>
+                <div class="remote-mode-sub">Built-in</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="remote-disconnected" id="remoteDisconnectedHeader">Make sure the remote is powered</div>
+      </div>
+      <!-- MODES SCREEN -->
+      <div id="modesScreen">
+        <div class="sub-header">
+          <div class="sub-title-main modes-title">MODES</div>
+        </div>
+        <div id="modesList"></div>
+        <div class="modes-add-wrap">
+          <div class="mode-add-card" id="btnModeAdd" role="button" tabindex="0">
+            <div class="mode-add-circle">
+              <svg class="mode-add-plus" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M11 5h2v14h-2zM5 11h14v2H5z"/>
+              </svg>
+            </div>
+            <div class="mode-add-text">Add Mode</div>
+          </div>
+          <div class="mode-channel" id="modeChannelPicker" style="display:none;">
+            <div class="mode-channel-title">Choose channel</div>
+            <div class="mode-channel-actions">
+              <button class="btn mode-channel-btn" id="modePickCh1">Channel 1</button>
+              <button class="btn mode-channel-btn" id="modePickCh2">Channel 2</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- MODES MODAL -->
+      <div class="mode-modal-overlay" id="modeModalOverlay">
+        <div class="mode-modal" role="dialog" aria-modal="true">
+          <div class="mode-modal-title" id="modeModalTitle">Mode name</div>
+          <input class="mode-modal-input" id="modeModalInput" type="text" maxlength="15" placeholder="Mode name">
+          <div class="mode-modal-actions">
+            <button class="btn mode-modal-btn" id="modeModalCancel">Cancel</button>
+            <button class="btn mode-modal-btn mode-modal-confirm" id="modeModalConfirm">Confirm</button>
+          </div>
+        </div>
+      </div>
+      <!-- SETTINGS SCREEN -->
+      <div id="settingsScreen">
+        <div class="sub-header">
+          <div class="sub-title-main">Settings</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">App Settings</div>
+          <div class="panel-sub">Language, theme, and device preferences.</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">BLE Console</div>
+          <div class="panel-sub">Incoming JSON from the controller.</div>
+          <div class="ble-console" id="bleConsole"></div>
+          <div class="ble-console-actions">
+            <button class="btn" id="btnBleConsoleClear" type="button">Clear console</button>
+          </div>
+        </div>
+      </div>
+      <!-- CH1 PICK SCREEN -->
+      <div id="ch1PickScreen">
+        <div class="sub-header">
+          <button class="back-btn" id="btnBackCh1Pick">Back</button>
+          <div class="sub-title-main" id="ch1PickTitle">Channel 1</div>
+          <div class="sub-header-right" id="ch1PickHeaderRight">
+            <div id="toggleCh1Header" class="toggle" title="Channel 1 Power">
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pick-grid">
+          <div class="pick-card" id="pickEffects">
+            <div style="position:relative; z-index:2;">
+              <div class="pick-title">Effects</div>
+              <div class="pick-sub">Choose an effect</div>
+            </div>
+          </div>
+          <div class="pick-card" id="pickScenes">
+            <div style="position:relative; z-index:2;">
+              <div class="pick-title">Scenes</div>
+              <div class="pick-sub">One-tap vibes</div>
+            </div>
+          </div>
+        </div>
+        <div class="pick-brightness">
+          <div class="control" id="controlBrightnessPick">
+            <label><span data-i18n="brightness">Brightness</span></label>
+            <div class="brightness-wrap" id="brightnessPickLevel" data-value="180">
+              <div class="bri-meter">
+                <div class="bri-circle" id="brightnessPickCircle">
+                  <div class="bri-fill" id="brightnessPickFill"></div>
+                  <div class="bri-core"></div>
+                </div>
+                <div class="bri-controls">
+                  <button class="bri-btn accent" id="brightnessPickDown" type="button" aria-label="Dim">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v2H5z"/></svg>
+                  </button>
+                  <button class="bri-btn accent" id="brightnessPickUp" type="button" aria-label="Brighten">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- EFFECTS SCREEN (CH1) -->
+      <div id="effectsScreen">
+        <div class="sub-header">
+          <button class="back-btn" id="btnBackEffects">Back</button>
+          <div class="sub-title-main" id="effectsTitle">Channel</div>
+        </div>
+        <div id="effectsList"></div>
+      </div>
+      <!-- SCENES SCREEN (CH1) -->
+      <div id="scenesScreen">
+        <div class="sub-header">
+          <button class="back-btn" id="btnBackScenes">Back</button>
+          <div class="sub-title-main" id="scenesTitle">Scenes</div>
+        </div>
+        <div id="scenesList"></div>
+      </div>
+      <!-- CONTROLS SCREEN -->
+      <div id="controlsScreen">
+        <div class="sub-header">
+          <button class="back-btn" id="btnBackControls">Back</button>
+          <div class="sub-title-main" id="controlsTitle">Controls</div>
+          <div class="sub-header-right" id="controlsHeaderRight">
+            <div id="toggleControlsPower" class="toggle" title="Power">
+              <div class="toggle-track"><div class="toggle-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="controls-shell">
+          <!-- CH1 controls -->
+          <div id="controlsCh1">
+            <div class="controls-row">
+              <div class="controls-left">
+                <div class="controls-grid">
+                  <div class="control span-2" id="controlBrightness">
+                    <label><span data-i18n="brightness">Brightness</span></label>
+                    <div class="brightness-wrap" id="brightnessLevel" data-value="180">
+                      <div class="bri-meter">
+                        <div class="bri-circle" id="brightnessCircle">
+                          <div class="bri-fill" id="brightnessFill"></div>
+                          <div class="bri-core"></div>
+                        </div>
+                        <div class="bri-controls">
+                          <button class="bri-btn accent" id="brightnessDown" type="button" aria-label="Dim">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v2H5z"/></svg>
+                          </button>
+                          <button class="bri-btn accent" id="brightnessUp" type="button" aria-label="Brighten">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="control" id="controlSpeed">
+                    <label><span data-i18n="speed">Speed</span></label>
+                    <input id="speed" type="range" min="0" max="255" value="128">
+                  </div>
+                  <div class="control" id="controlLength">
+                    <label><span data-i18n="length">Length</span></label>
+                    <input id="length" type="range" min="1" max="300" value="125">
+                  </div>
+                  <div class="control" id="controlParam1">
+                    <label><span id="labelParam1">P1</span></label>
+                    <input id="param1" type="range" min="0" max="100" value="50">
+                    <div class="spotlight-stepper" id="spotlightStepper" style="display:none;">
+                      <button class="bri-btn accent" id="spotlightDown" type="button" aria-label="Fewer spots">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v2H5z"/></svg>
+                      </button>
+                      <div class="spotlight-value" id="spotlightValue">1</div>
+                      <button class="bri-btn accent" id="spotlightUp" type="button" aria-label="More spots">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+                      </button>
+                    </div>
+                    <div class="blend-toggle-wrap" id="blendWrapParam1">
+                      <div class="toggle" id="blendToggleParam1" title="Blend">
+                        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                      </div>
+                    </div>
+                    <div id="param1Special" class="special-wrap">
+                      <div id="p1DirWrap" class="arrow-wrap">
+                        <button class="arrow-btn" id="p1Left">L</button>
+                        <div class="arrow-pill" id="p1DirLabel">Left</div>
+                        <button class="arrow-btn" id="p1Right">R</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="control" id="controlParam2">
+                    <label><span id="labelParam2">P2</span></label>
+                    <input id="param2" type="range" min="0" max="100" value="0">
+                  </div>
+                  <div class="control" id="controlParam3">
+                    <label><span id="labelParam3">P3</span></label>
+                    <input id="param3" type="range" min="0" max="100" value="0">
+                    <div class="blend-toggle-wrap" id="blendWrapParam3">
+                      <div class="toggle" id="blendToggleParam3" title="Blend">
+                        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="controls-right">
+                <div class="toggle-block-row" id="linkedRow">
+                  <div class="linked-group">
+                    <div class="toggle-row-label" data-i18n="linked">Linked</div>
+                    <div id="toggleLinked" class="toggle" title="Linked">
+                      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                    </div>
+                  </div>
+                  <div class="linked-group" id="blendLinkedGroup" style="display:none;">
+                    <div class="toggle-row-label">Blend</div>
+                    <div id="blendToggleLinked" class="toggle" title="Blend">
+                      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Colors now: segment buttons + "Open palette" -->
+            <div class="color-wrap" id="controlColors">
+              <div class="segbar">
+                <button class="segbtn active" id="segBtn1" type="button">
+                  <span class="seg-swatch" id="swatch1"></span>
+                </button>
+                <button class="segbtn" id="segBtn2" type="button">
+                  <span class="seg-swatch" id="swatch2"></span>
+                </button>
+                <button class="segbtn" id="segBtn3" type="button">
+                  <span class="seg-swatch" id="swatch3"></span>
+                </button>
+              </div>
+            </div>
+            <div class="apply-mode-wrap">
+              <button class="btn apply-mode-btn" id="btnApplyMode">Apply Mode</button>
+            </div>
+          </div>
+          <!-- CH2 controls -->
+          <div id="controlsCh2" style="display:none;">
+            <div class="control" id="controlWarmWhiteCh2" style="margin-top: 6px;">
+              <label>Warm White</label>
+              <div class="brightness-wrap warm-meter" id="warmLevel" data-value="0">
+                <div class="bri-meter">
+                  <div class="bri-circle warm" id="warmCircle">
+                    <div class="bri-fill warm" id="warmFill"></div>
+                    <div class="bri-core warm"></div>
+                  </div>
+                  <div class="bri-controls">
+                    <button class="bri-btn accent" id="warmDown" type="button" aria-label="Dim warm white">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v2H5z"/></svg>
+                    </button>
+                    <button class="bri-btn accent" id="warmUp" type="button" aria-label="Brighten warm white">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <input id="warmWhiteCh2" type="range" min="0" max="255" value="0" style="display:none;">
+            </div>
+            <div class="control" id="controlColdWhiteCh2" style="margin-top: 12px;">
+              <label>Cold White</label>
+              <div class="brightness-wrap cool-meter" id="coldLevel" data-value="0">
+                <div class="bri-meter">
+                  <div class="bri-circle cool" id="coldCircle">
+                    <div class="bri-fill cool" id="coldFill"></div>
+                    <div class="bri-core cool"></div>
+                  </div>
+                  <div class="bri-controls">
+                    <button class="bri-btn accent" id="coldDown" type="button" aria-label="Dim cool white">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v2H5z"/></svg>
+                    </button>
+                    <button class="bri-btn accent" id="coldUp" type="button" aria-label="Brighten cool white">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <input id="coldWhiteCh2" type="range" min="0" max="255" value="0" style="display:none;">
+            </div>
+            <div class="apply-mode-wrap">
+              <button class="btn apply-mode-btn" id="btnApplyModeCh2">Apply Mode</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Bottom Navigation -->
+      <div class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" id="navHome">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3.5 3.5 10.5h1.6V20h5.3v-5.1h3.2V20h5.3v-9.5h1.6L12 3.5z"/>
+          </svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" id="navModes">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6.5 4.5h11A2.5 2.5 0 0 1 20 7v10a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17V7a2.5 2.5 0 0 1 2.5-2.5zm1.8 3.4h7.4v2H8.3v-2zm0 4h7.4v2H8.3v-2zm0 4h4.4v2H8.3v-2z"/>
+          </svg>
+          <span>Modes</span>
+        </button>
+        <button class="nav-item" id="navRemote">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 4.5h10A2.5 2.5 0 0 1 19.5 7v10A2.5 2.5 0 0 1 17 19.5H7A2.5 2.5 0 0 1 4.5 17V7A2.5 2.5 0 0 1 7 4.5zm2.6 4.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm4.8 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm-2.4 4.2a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/>
+          </svg>
+          <span>Smart Remote</span>
+        </button>
+        <button class="nav-item" id="navSettings">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 8.1a3.9 3.9 0 1 0 0 7.8 3.9 3.9 0 0 0 0-7.8zm9 3.9-2.2.6a7.7 7.7 0 0 1-.7 1.7l1.1 2-2.1 2.1-2-1.1c-.5.3-1.1.5-1.7.7L12 21l-2.4-2.2c-.6-.1-1.2-.4-1.7-.7l-2 1.1-2.1-2.1 1.1-2c-.3-.5-.5-1.1-.7-1.7L3 12l2.2-2.4c.1-.6.4-1.2.7-1.7l-1.1-2L6.9 3.8l2 1.1c.5-.3 1.1-.5 1.7-.7L12 3l2.4 2.2c.6.1 1.2.4 1.7.7l2-1.1 2.1 2.1-1.1 2c.3.5.5 1.1.7 1.7L21 12z"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+      </div>
+    </div>
+    <script src="capacitor.js"></script>
+    <script src="./ble_bridge.js"></script>
+    <script src="./index21.js"></script>
+  </body>
+</html>
