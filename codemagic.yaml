@@ -65,7 +65,8 @@ workflows:
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM=49HW48XY67 \
             PRODUCT_BUNDLE_IDENTIFIER=com.arca.aled \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME"
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            CODE_SIGN_IDENTITY="Apple Distribution"
       - name: Export ipa
         script: |
           cat > "$CM_BUILD_DIR/exportOptions.plist" <<EOF
