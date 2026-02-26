@@ -26,3 +26,39 @@ workflows:
 
     artifacts:
       - ~/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+
+  ios_testflight:
+    name: iOS TestFlight Release (Capacitor)
+    max_build_duration: 90
+    environment:
+      xcode: latest
+      node: 22
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.arca.aled
+
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+
+      - name: Sync Capacitor iOS
+        script: npx cap sync ios
+
+      - name: Set up code signing
+        script: xcode-project use-profiles
+
+      - name: Build ipa for App Store
+        script: |
+          cd ios/App
+          xcode-project build-ipa \
+            --project App.xcodeproj \
+            --scheme App
+
+    artifacts:
+      - ios/App/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
