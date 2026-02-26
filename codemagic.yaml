@@ -73,7 +73,8 @@ workflows:
             DEVELOPMENT_TEAM=49HW48XY67 \
             PRODUCT_BUNDLE_IDENTIFIER=com.arca.aled \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
-            CODE_SIGN_IDENTITY="Apple Distribution"
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
       - name: Export ipa
         script: |
           cat > "$CM_BUILD_DIR/exportOptions.plist" <<EOF
@@ -108,3 +109,4 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+
