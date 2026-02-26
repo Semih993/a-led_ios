@@ -1,0 +1,24 @@
+workflows:
+  ios_debug_build:
+    name: iOS Debug Build (Capacitor)
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      node: 20
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Sync Capacitor iOS
+        script: npx cap sync ios
+      - name: Build iOS app (unsigned, simulator check)
+        script: |
+          cd ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            build
+    artifacts:
+      - ~/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
