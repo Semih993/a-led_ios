@@ -41,6 +41,11 @@ workflows:
         script: npm ci
       - name: Sync Capacitor iOS
         script: npx cap sync ios
+      - name: Clean SwiftPM cache
+        script: |
+          rm -rf ~/Library/Caches/org.swift.swiftpm/artifacts
+          rm -rf ~/Library/Caches/org.swift.swiftpm/repositories
+          rm -rf "$CM_BUILD_DIR/SourcePackages"
       - name: Resolve profile metadata
         script: |
           PROFILE_PATH=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" | head -n1)
@@ -61,6 +66,8 @@ workflows:
             -scheme App \
             -configuration Release \
             -archivePath "$CM_BUILD_DIR/build/App.xcarchive" \
+            -clonedSourcePackagesDirPath "$CM_BUILD_DIR/SourcePackages" \
+            -disablePackageRepositoryCache \
             archive \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM=49HW48XY67 \
